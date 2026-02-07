@@ -1,6 +1,11 @@
+import { randomInt } from "node:crypto";
 import type { FastifyInstance } from "fastify";
 import type { ClientMessage, ChatMessage } from "@vtt/shared";
 import { rollDice } from "@vtt/shared";
+
+function cryptoRandom(max: number): number {
+  return randomInt(1, max + 1);
+}
 import type { RoomService } from "../services/roomService.js";
 import type { CanvasService } from "../services/canvasService.js";
 import type { ChatService } from "../services/chatService.js";
@@ -133,7 +138,7 @@ export function wsRoutes(app: FastifyInstance, deps: WsDeps) {
         const formula = msg.payload.formula.trim();
         if (!formula) return;
 
-        const result = rollDice(formula);
+        const result = rollDice(formula, cryptoRandom);
         if (!result) {
           wsManager.send(socket, {
             type: "error",

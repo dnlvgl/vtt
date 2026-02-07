@@ -1,0 +1,33 @@
+.object {
+  position: absolute;
+}
+
+.selected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+
+.deleteButton {
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+}
+
+.deleteButton:hover {
+  background: var(--color-error);
+  color: white;
+  border-color: var(--color-error);
+}

@@ -3,8 +3,10 @@ import { useParams, useNavigate } from "react-router";
 import type { JoinRoomResponse, ServerMessage } from "@vtt/shared";
 import { useRoomStore } from "../stores/roomStore.js";
 import { useChatStore } from "../stores/chatStore.js";
+import { useCanvasStore } from "../stores/canvasStore.js";
 import { useUiStore } from "../stores/uiStore.js";
 import { connectWs, disconnectWs } from "../lib/ws.js";
+import { Canvas } from "../components/canvas/Canvas.js";
 import { Sidebar } from "../components/sidebar/Sidebar.js";
 import styles from "./RoomPage.module.css";
 
@@ -13,6 +15,7 @@ export function RoomPage() {
   const navigate = useNavigate();
   const { room, sessionToken, setRoom, setParticipant, setGmSecret, setParticipants, addParticipant, removeParticipant } = useRoomStore();
   const { setMessages, addMessage } = useChatStore();
+  const { setObjects, addObject, updateObject, removeObject } = useCanvasStore();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const [loading, setLoading] = useState(!room);
@@ -57,6 +60,7 @@ export function RoomPage() {
         case "room_state":
           setParticipants(msg.payload.participants);
           setMessages(msg.payload.messages);
+          setObjects(msg.payload.objects);
           setWsConnected(true);
           break;
         case "participant_joined":
@@ -67,6 +71,21 @@ export function RoomPage() {
           break;
         case "chat_broadcast":
           addMessage(msg.payload);
+          break;
+        case "object_created":
+          addObject(msg.payload);
+          break;
+        case "object_updated":
+          updateObject(msg.payload);
+          break;
+        case "object_deleted":
+          removeObject(msg.payload.id);
+          break;
+        case "object_revealed":
+          addObject(msg.payload);
+          break;
+        case "object_hidden":
+          removeObject(msg.payload.id);
           break;
         case "error":
           console.error("WS error:", msg.payload.code, msg.payload.message);
@@ -81,7 +100,7 @@ export function RoomPage() {
     return () => {
       disconnectWs();
     };
-  }, [room, sessionToken, code, setParticipants, setMessages, addParticipant, removeParticipant, addMessage]);
+  }, [room, sessionToken, code, setParticipants, setMessages, setObjects, addParticipant, removeParticipant, addMessage, addObject, updateObject, removeObject]);
 
   if (loading) {
     return (
@@ -117,9 +136,7 @@ export function RoomPage() {
           </div>
         </header>
         <div className={styles.canvasArea}>
-          <div className={styles.placeholder}>
-            Canvas will be here (Phase 4)
-          </div>
+          <Canvas />
         </div>
       </div>
       <Sidebar />
