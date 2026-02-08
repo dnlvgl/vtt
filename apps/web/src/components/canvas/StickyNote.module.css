@@ -6,11 +6,42 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: var(--shadow);
+  cursor: grab;
+  user-select: none;
+}
+
+.stickyNote:active {
+  cursor: grabbing;
+}
+
+.editing {
+  cursor: text;
+  user-select: auto;
+}
+
+.editing:active {
+  cursor: text;
+}
+
+.content {
+  width: 100%;
+  flex: 1;
+  padding: 0.75rem;
+  color: #1a1a1a;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow: hidden;
+}
+
+.placeholder {
+  color: rgba(0, 0, 0, 0.3);
 }
 
 .textarea {
   width: 100%;
-  height: 100%;
+  flex: 1;
   border: none;
   background: transparent;
   color: #1a1a1a;

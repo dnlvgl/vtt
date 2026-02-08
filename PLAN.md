@@ -133,20 +133,20 @@ Parser in `@vtt/shared` supports: `2w6+3`, `1w100`, `1d20+1d6+5` (both `w` and `
 ## Implementation Phases
 
 ### Phase 1: Foundation (DONE)
-Set up Turborepo monorepo, Fastify server with health endpoint, Vite + React frontend with CSS Modules, `@vtt/shared` package, Drizzle schema + SQLite, room creation/joining REST endpoints, home page with create/join UI, GM dashboard page (`/gm`) with room list/create/delete.
-**Verify:** `turbo dev` starts both apps. Create a room via UI, join with code. GM dashboard lists all rooms.
+Set up Turborepo monorepo, Fastify server with health endpoint, Vite + React frontend with CSS Modules, `@vtt/shared` package, Drizzle schema + SQLite, room creation/joining REST endpoints, home page with Join Room + GM link, GM dashboard page (`/gm`) with room list/create/enter/delete.
+**Verify:** `pnpm dev` starts both apps. Create a room via GM dashboard, join with code from homepage.
 
-### Phase 2: WebSocket + Chat
-Add `@fastify/websocket`, implement `wsManager` with room-based connection tracking, `join_room`/`room_state` flow, chat message persistence and broadcast. Build sidebar with chat panel.
+### Phase 2: WebSocket + Chat (DONE)
+Added `@fastify/websocket`, `wsManager` service for room-based connection tracking. WebSocket route at `/ws/:code?token=` handles authentication, sends `room_state` on connect, broadcasts `participant_joined/left`. Chat message persistence via `chatService`, broadcast to all room members. Built `Sidebar` with `ChatPanel` component. Client-side `ws.ts` module manages connection with StrictMode-safe cleanup.
 **Verify:** Two browser tabs in same room, send chat messages visible in both.
 
-### Phase 3: Dice Rolling
-Implement dice parser in `@vtt/shared`, server-side rolling with `crypto.getRandomValues`, `/dice` command detection in chat input, dice result rendering.
-**Verify:** `/dice 2w6+3` shows rolled results to all players.
+### Phase 3: Dice Rolling (DONE)
+Dice parser in `@vtt/shared` supports `2w6+3`, `1d20+1d6+5` (both `w`/`d` notation). Server rolls using `crypto.randomInt` (prevents cheating). ChatPanel detects `/roll`, `/dice`, `/r` commands. Dice results render with formula, individual rolls, and total.
+**Verify:** `/roll 2w6+3` shows rolled results to all players.
 
-### Phase 4: Infinite Canvas + Sticky Notes
-Install `react-zoom-pan-pinch` + `react-rnd`. Build canvas with pan/zoom, `CanvasObject` wrapper, `StickyNote` component. Wire create/update/delete through WebSocket.
-**Verify:** Two browsers -- add/move/resize/delete sticky notes, synced in real-time.
+### Phase 4: Infinite Canvas + Sticky Notes (DONE)
+Installed `react-zoom-pan-pinch` + `react-rnd`. Canvas component with pan/zoom viewport. `CanvasObject` wrapper handles drag/resize with optimistic local store updates + WS sync. Miro-style interaction: single click selects (move/resize), double click enters text editing. Delete via Del/Backspace key. `stopPropagation` on both `pointerDown` and `mouseDown` prevents pan/zoom from stealing object interactions.
+**Verify:** Two browsers — add/move/resize/delete sticky notes, synced in real-time.
 
 ### Phase 5: Image Upload
 Add `@fastify/multipart` + `@fastify/static`. Build file upload endpoint, `ImageObject` component, upload toolbar button.

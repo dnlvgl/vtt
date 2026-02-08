@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Rnd } from "react-rnd";
 import { useCanvasStore } from "../../stores/canvasStore.js";
 import { sendWs } from "../../lib/ws.js";
@@ -12,10 +12,31 @@ interface CanvasObjectProps {
   onSelect: () => void;
 }
 
+function stopPropagation(e: React.SyntheticEvent) {
+  e.stopPropagation();
+}
+
 export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectProps) {
   const object = useCanvasStore((s) => s.objects[id]);
   const updateObject = useCanvasStore((s) => s.updateObject);
   const rndRef = useRef<Rnd>(null);
+  const [editing, setEditing] = useState(false);
+
+  useEffect(() => {
+    if (!isSelected) setEditing(false);
+  }, [isSelected]);
+
+  useEffect(() => {
+    if (!isSelected || editing) return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Delete" || e.key === "Backspace") {
+        useCanvasStore.getState().removeObject(id);
+        sendWs({ type: "object_delete", payload: { id } });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isSelected, editing, id]);
 
   const handleDragStop = useCallback((_: unknown, d: { x: number; y: number }) => {
     const obj = useCanvasStore.getState().objects[id];
@@ -42,15 +63,12 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     [id, updateObject],
   );
 
-  const handleDelete = useCallback(() => {
-    sendWs({ type: "object_delete", payload: { id } });
-  }, [id]);
-
   if (!object) return null;
 
   return (
     <div
-      onPointerDown={(e) => e.stopPropagation()}
+      onPointerDown={stopPropagation}
+      onMouseDown={stopPropagation}
     >
       <Rnd
         ref={rndRef}
@@ -59,19 +77,22 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
         size={{ width: object.width, height: object.height }}
         scale={scale}
         style={{ zIndex: object.zIndex }}
+        disableDragging={editing}
+        enableResizing={!editing}
         onDragStart={onSelect}
         onDragStop={handleDragStop}
         onResizeStop={handleResizeStop}
         minWidth={100}
         minHeight={60}
       >
-        {isSelected && (
-          <button className={styles.deleteButton} onMouseDown={(e) => e.stopPropagation()} onClick={handleDelete}>
-            &times;
-          </button>
-        )}
         {object.type === "sticky_note" && (
-          <StickyNote id={id} content={object.content ?? ""} style={object.style} />
+          <StickyNote
+            id={id}
+            content={object.content ?? ""}
+            style={object.style}
+            editing={editing}
+            onStartEdit={() => setEditing(true)}
+          />
         )}
       </Rnd>
     </div>
