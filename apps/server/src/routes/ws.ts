@@ -190,13 +190,33 @@ export function wsRoutes(app: FastifyInstance, deps: WsDeps) {
         const updated = canvasService.updateObject(msg.payload.id, roomId, msg.payload);
         if (!updated) return;
 
-        wsManager.broadcast(roomId, { type: "object_updated", payload: updated }, socket);
+        if (updated.hiddenFromPlayers) {
+          for (const ws of wsManager.getRoomConnections(roomId)) {
+            const conn = wsManager.get(ws);
+            if (ws !== socket && conn?.isGm) {
+              wsManager.send(ws, { type: "object_updated", payload: updated });
+            }
+          }
+        } else {
+          wsManager.broadcast(roomId, { type: "object_updated", payload: updated }, socket);
+        }
         break;
       }
 
       case "object_delete": {
+        const toDelete = canvasService.getObject(msg.payload.id, roomId);
         canvasService.deleteObject(msg.payload.id, roomId);
-        wsManager.broadcast(roomId, { type: "object_deleted", payload: { id: msg.payload.id } }, socket);
+
+        if (toDelete?.hiddenFromPlayers) {
+          for (const ws of wsManager.getRoomConnections(roomId)) {
+            const conn = wsManager.get(ws);
+            if (ws !== socket && conn?.isGm) {
+              wsManager.send(ws, { type: "object_deleted", payload: { id: msg.payload.id } });
+            }
+          }
+        } else {
+          wsManager.broadcast(roomId, { type: "object_deleted", payload: { id: msg.payload.id } }, socket);
+        }
         break;
       }
 

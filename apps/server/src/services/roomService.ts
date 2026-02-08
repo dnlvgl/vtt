@@ -52,7 +52,7 @@ export function createRoomService(db: Db) {
       };
     },
 
-    joinRoom(code: string, name: string, gmSecret?: string) {
+    joinRoom(code: string, name: string, isGm?: boolean) {
       const room = db
         .select()
         .from(schema.rooms)
@@ -60,8 +60,6 @@ export function createRoomService(db: Db) {
         .get();
 
       if (!room) return null;
-
-      const isGm = gmSecret ? room.gmSecret === gmSecret : false;
 
       const participantId = nanoid();
       const sessionToken = nanoid(32);
@@ -72,7 +70,7 @@ export function createRoomService(db: Db) {
           id: participantId,
           roomId: room.id,
           name,
-          isGm,
+          isGm: !!isGm,
           sessionToken,
           lastSeen: now,
         })
@@ -90,7 +88,7 @@ export function createRoomService(db: Db) {
           id: participantId,
           roomId: room.id,
           name,
-          isGm,
+          isGm: !!isGm,
           lastSeen: now,
         },
       };

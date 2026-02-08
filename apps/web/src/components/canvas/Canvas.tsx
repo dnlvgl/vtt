@@ -14,7 +14,9 @@ export function Canvas() {
   const setSelectedId = useCanvasStore((s) => s.setSelectedId);
   const room = useRoomStore((s) => s.room);
   const sessionToken = useRoomStore((s) => s.sessionToken);
+  const isGm = useRoomStore((s) => s.isGm);
   const [scale, setScale] = useState(1);
+  const [createHidden, setCreateHidden] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -30,9 +32,10 @@ export function Canvas() {
         height: 200,
         content: "",
         style: { backgroundColor: "#fef08a" },
+        ...(createHidden ? { hiddenFromPlayers: true } : {}),
       },
     });
-  }, []);
+  }, [createHidden]);
 
   const uploadAsset = useCallback(async (
     file: File,
@@ -70,12 +73,13 @@ export function Canvas() {
           height,
           content: asset.url,
           assetId: asset.id,
+          ...(createHidden ? { hiddenFromPlayers: true } : {}),
         },
       });
     } catch (err) {
       console.error("Upload failed:", err);
     }
-  }, [room, sessionToken]);
+  }, [room, sessionToken, createHidden]);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -123,6 +127,18 @@ export function Canvas() {
           onChange={handlePdfUpload}
           hidden
         />
+        {isGm && (
+          <>
+            <div className={styles.toolbarSeparator} />
+            <button
+              className={`${styles.toolbarToggle} ${createHidden ? styles.toolbarToggleActive : ""}`}
+              onClick={() => setCreateHidden((v) => !v)}
+              title="New objects will be created hidden from players"
+            >
+              Create as: {createHidden ? "Hidden" : "Visible"}
+            </button>
+          </>
+        )}
       </div>
 
       <TransformWrapper

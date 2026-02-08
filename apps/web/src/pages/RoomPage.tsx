@@ -86,9 +86,17 @@ export function RoomPage() {
         case "object_revealed":
           addObject(msg.payload);
           break;
-        case "object_hidden":
-          removeObject(msg.payload.id);
+        case "object_hidden": {
+          const isGm = useRoomStore.getState().isGm;
+          if (isGm) {
+            // GM keeps the object but marks it hidden
+            const obj = useCanvasStore.getState().objects[msg.payload.id];
+            if (obj) updateObject({ ...obj, hiddenFromPlayers: true });
+          } else {
+            removeObject(msg.payload.id);
+          }
           break;
+        }
         case "error":
           console.error("WS error:", msg.payload.code, msg.payload.message);
           break;

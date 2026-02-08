@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Rnd } from "react-rnd";
 import { useCanvasStore } from "../../stores/canvasStore.js";
+import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
 import { StickyNote } from "./StickyNote.js";
 import { ImageObject } from "./ImageObject.js";
@@ -21,6 +22,7 @@ function stopPropagation(e: React.SyntheticEvent) {
 export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectProps) {
   const object = useCanvasStore((s) => s.objects[id]);
   const updateObject = useCanvasStore((s) => s.updateObject);
+  const isGm = useRoomStore((s) => s.isGm);
   const rndRef = useRef<Rnd>(null);
   const [editing, setEditing] = useState(false);
 
@@ -65,7 +67,23 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     [id, updateObject],
   );
 
+  const handleToggleVisibility = useCallback(() => {
+    if (!object) return;
+    if (object.hiddenFromPlayers) {
+      sendWs({ type: "object_reveal", payload: { id } });
+    } else {
+      sendWs({ type: "object_hide", payload: { id } });
+    }
+  }, [id, object]);
+
   if (!object) return null;
+
+  const isHidden = object.hiddenFromPlayers;
+  const classNames = [
+    styles.object,
+    isSelected ? styles.selected : "",
+    isHidden ? styles.hidden : "",
+  ].filter(Boolean).join(" ");
 
   return (
     <div
@@ -75,7 +93,7 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     >
       <Rnd
         ref={rndRef}
-        className={`${styles.object} ${isSelected ? styles.selected : ""}`}
+        className={classNames}
         position={{ x: object.x, y: object.y }}
         size={{ width: object.width, height: object.height }}
         scale={scale}
@@ -88,6 +106,20 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
         minWidth={100}
         minHeight={60}
       >
+        {isGm && isHidden && (
+          <div className={styles.hiddenBadge}>Hidden</div>
+        )}
+        {isGm && isSelected && (
+          <div className={styles.actions}>
+            <button
+              className={styles.actionButton}
+              onMouseDown={stopPropagation}
+              onClick={handleToggleVisibility}
+            >
+              {isHidden ? "Reveal" : "Hide"}
+            </button>
+          </div>
+        )}
         {object.type === "sticky_note" && (
           <StickyNote
             id={id}

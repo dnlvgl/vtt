@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useCanvasStore } from "../../stores/canvasStore.js";
 import { sendWs } from "../../lib/ws.js";
 import styles from "./StickyNote.module.css";
 
@@ -26,6 +27,10 @@ export function StickyNote({ id, content, style, editing, onStartEdit }: StickyN
 
   const handleBlur = useCallback(() => {
     if (text !== content) {
+      const obj = useCanvasStore.getState().objects[id];
+      if (obj) {
+        useCanvasStore.getState().updateObject({ ...obj, content: text });
+      }
       sendWs({
         type: "object_update",
         payload: { id, content: text },

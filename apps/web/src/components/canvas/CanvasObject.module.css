@@ -6,3 +6,52 @@
   outline: 2px solid var(--color-primary);
   outline-offset: 1px;
 }
+
+.hidden {
+  opacity: 0.5;
+  outline: 2px dashed var(--color-text-secondary);
+  outline-offset: 1px;
+}
+
+.hidden.selected {
+  outline: 2px dashed var(--color-primary);
+}
+
+.hiddenBadge {
+  position: absolute;
+  top: -1.5rem;
+  left: 0;
+  padding: 0.1rem 0.4rem;
+  background: var(--color-text-secondary);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  pointer-events: none;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.actions {
+  position: absolute;
+  top: -2rem;
+  right: 0;
+  display: flex;
+  gap: 0.25rem;
+}
+
+.actionButton {
+  padding: 0.15rem 0.4rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: var(--shadow);
+}
+
+.actionButton:hover {
+  background: var(--color-surface-hover);
+}

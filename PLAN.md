@@ -156,8 +156,8 @@ Installed `@fastify/multipart` + `@fastify/static`. Created `assetService` for D
 Installed `react-pdf` v10 + `pdfjs-dist` (pinned to v5.4.296 matching react-pdf). Worker configured via `?url` Vite import. Asset upload route updated to accept both images and PDFs. `PdfThumbnail` component renders first page on canvas with page count badge; double-click opens sidebar viewer. `PdfViewer` in sidebar with prev/next page navigation. Sidebar now has tab switching (Chat / PDF) — PDF tab appears when a PDF is open. Canvas toolbar has "+ PDF" button. `CanvasObject` renders `PdfThumbnail` for `type === "pdf"`. Upload flow reuses shared `uploadAsset()` function for both images and PDFs.
 **Verify:** Upload PDF, thumbnail on canvas, click to read in sidebar with page navigation.
 
-### Phase 7: GM Visibility Control
-Add hidden toggle on object creation (GM only), server-side filtering, reveal/hide WebSocket handlers, GM-specific UI indicators, context menu actions.
+### Phase 7: GM Visibility Control (DONE)
+Server-side infrastructure was already built (hiddenFromPlayers field, server filtering, reveal/hide WS handlers). Frontend: GM toolbar has "Visible/Hidden" toggle that applies to all newly created objects (sticky notes, images, PDFs). Hidden objects show with 50% opacity, dashed border, and "Hidden" badge. When GM selects any object, a "Reveal"/"Hide" action button appears above it. `object_reveal` sends full object to all (players see it appear); `object_hidden` for GM updates the flag locally instead of removing the object. Server already filters hidden objects from non-GM `room_state`.
 **Verify:** GM creates hidden asset, player doesn't see it, GM reveals, player sees it appear.
 
 ### Phase 8: Polish

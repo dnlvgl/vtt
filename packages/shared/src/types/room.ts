@@ -6,7 +6,7 @@ export const CreateRoomSchema = z.object({
 
 export const JoinRoomSchema = z.object({
   name: z.string().min(1).max(50),
-  gmSecret: z.string().optional(),
+  isGm: z.boolean().optional(),
 });
 
 export type CreateRoomRequest = z.infer<typeof CreateRoomSchema>;

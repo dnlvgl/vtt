@@ -17,6 +17,19 @@ export function createCanvasService(db: Db) {
       return objects.filter((o) => !o.hiddenFromPlayers);
     },
 
+    getObject(id: string, roomId: string) {
+      return db
+        .select()
+        .from(schema.whiteboardObjects)
+        .where(
+          and(
+            eq(schema.whiteboardObjects.id, id),
+            eq(schema.whiteboardObjects.roomId, roomId),
+          ),
+        )
+        .get() ?? null;
+    },
+
     createObject(roomId: string, createdBy: string, payload: ObjectCreatePayload) {
       const id = nanoid();
       const now = new Date().toISOString();
@@ -52,18 +65,18 @@ export function createCanvasService(db: Db) {
 
     updateObject(id: string, roomId: string, payload: ObjectUpdatePayload) {
       const now = new Date().toISOString();
-      const updates: Record<string, unknown> = { updatedAt: now };
 
-      if (payload.x !== undefined) updates["x"] = payload.x;
-      if (payload.y !== undefined) updates["y"] = payload.y;
-      if (payload.width !== undefined) updates["width"] = payload.width;
-      if (payload.height !== undefined) updates["height"] = payload.height;
-      if (payload.content !== undefined) updates["content"] = payload.content;
-      if (payload.style !== undefined) updates["style"] = payload.style;
-      if (payload.zIndex !== undefined) updates["zIndex"] = payload.zIndex;
+      const sets: Partial<typeof schema.whiteboardObjects.$inferInsert> = { updatedAt: now };
+      if (payload.x !== undefined) sets.x = payload.x;
+      if (payload.y !== undefined) sets.y = payload.y;
+      if (payload.width !== undefined) sets.width = payload.width;
+      if (payload.height !== undefined) sets.height = payload.height;
+      if (payload.content !== undefined) sets.content = payload.content;
+      if (payload.style !== undefined) sets.style = payload.style;
+      if (payload.zIndex !== undefined) sets.zIndex = payload.zIndex;
 
       db.update(schema.whiteboardObjects)
-        .set(updates)
+        .set(sets)
         .where(
           and(
             eq(schema.whiteboardObjects.id, id),

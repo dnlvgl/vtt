@@ -54,7 +54,7 @@ export function roomRoutes(
       const result = roomService.joinRoom(
         request.params.code,
         parsed.data.name,
-        parsed.data.gmSecret,
+        parsed.data.isGm,
       );
 
       if (!result) {

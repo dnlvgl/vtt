@@ -68,7 +68,7 @@ export function GmDashboardPage() {
       const res = await fetch(`/api/rooms/${room.code}/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "Game Master" }),
+        body: JSON.stringify({ name: "Game Master", isGm: true }),
       });
       if (!res.ok) throw new Error("Failed to enter room");
       const data: JoinRoomResponse = await res.json();
