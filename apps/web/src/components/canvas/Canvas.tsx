@@ -1,6 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import { ALLOWED_IMAGE_TYPES } from "@vtt/shared";
 import { useCanvasStore } from "../../stores/canvasStore.js";
+import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
 import { CanvasObject } from "./CanvasObject.js";
 import styles from "./Canvas.module.css";
@@ -9,8 +11,11 @@ export function Canvas() {
   const objects = useCanvasStore((s) => s.objects);
   const selectedId = useCanvasStore((s) => s.selectedId);
   const setSelectedId = useCanvasStore((s) => s.setSelectedId);
+  const room = useRoomStore((s) => s.room);
+  const sessionToken = useRoomStore((s) => s.sessionToken);
   const [scale, setScale] = useState(1);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddStickyNote = useCallback(() => {
     sendWs({
@@ -27,6 +32,48 @@ export function Canvas() {
     });
   }, []);
 
+  const handleUploadImage = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !room || !sessionToken) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch(`/api/rooms/${room.code}/assets`, {
+        method: "POST",
+        headers: { "x-session-token": sessionToken },
+        body: formData,
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Upload failed:", err.error);
+        return;
+      }
+
+      const asset: { id: string; url: string } = await res.json();
+
+      sendWs({
+        type: "object_create",
+        payload: {
+          type: "image",
+          x: 200 + Math.random() * 400,
+          y: 200 + Math.random() * 400,
+          width: 400,
+          height: 300,
+          content: asset.url,
+          assetId: asset.id,
+        },
+      });
+    } catch (err) {
+      console.error("Upload failed:", err);
+    }
+
+    // Reset file input so the same file can be re-uploaded
+    e.target.value = "";
+  }, [room, sessionToken]);
+
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === canvasRef.current) {
       setSelectedId(null);
@@ -41,6 +88,16 @@ export function Canvas() {
         <button className={styles.toolbarButton} onClick={handleAddStickyNote}>
           + Sticky Note
         </button>
+        <button className={styles.toolbarButton} onClick={() => fileInputRef.current?.click()}>
+          + Image
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={ALLOWED_IMAGE_TYPES.join(",")}
+          onChange={handleUploadImage}
+          hidden
+        />
       </div>
 
       <TransformWrapper

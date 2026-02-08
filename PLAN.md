@@ -148,8 +148,8 @@ Dice parser in `@vtt/shared` supports `2w6+3`, `1d20+1d6+5` (both `w`/`d` notati
 Installed `react-zoom-pan-pinch` + `react-rnd`. Canvas component with pan/zoom viewport. `CanvasObject` wrapper handles drag/resize with optimistic local store updates + WS sync. Miro-style interaction: single click selects (move/resize), double click enters text editing. Delete via Del/Backspace key. `stopPropagation` on both `pointerDown` and `mouseDown` prevents pan/zoom from stealing object interactions.
 **Verify:** Two browsers — add/move/resize/delete sticky notes, synced in real-time.
 
-### Phase 5: Image Upload
-Add `@fastify/multipart` + `@fastify/static`. Build file upload endpoint, `ImageObject` component, upload toolbar button.
+### Phase 5: Image Upload (DONE)
+Installed `@fastify/multipart` + `@fastify/static`. Created `assetService` for DB operations. Upload endpoint at `POST /api/rooms/:code/assets` with session token auth, file type validation (png/jpeg/gif/webp), and size limit (50MB). Files stored in `uploads/<roomId>/<assetId>.<ext>`, served via `@fastify/static` at `/uploads/`. `ImageObject` component renders images with `object-fit: contain`. Canvas toolbar has "+ Image" button triggering hidden file input. Upload flow: file → REST upload → get asset URL → WS `object_create` with `type: "image"` + `assetId` + `content` (URL). Vite dev proxy forwards `/uploads` to backend.
 **Verify:** Upload image, appears on canvas, drag/resize, visible to other players.
 
 ### Phase 6: PDF Upload + Viewer
