@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { ALLOWED_IMAGE_TYPES } from "@vtt/shared";
+import { ALLOWED_IMAGE_TYPES, ALLOWED_PDF_TYPES } from "@vtt/shared";
+import type { WhiteboardObjectType } from "@vtt/shared";
 import { useCanvasStore } from "../../stores/canvasStore.js";
 import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
@@ -15,7 +16,8 @@ export function Canvas() {
   const sessionToken = useRoomStore((s) => s.sessionToken);
   const [scale, setScale] = useState(1);
   const canvasRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   const handleAddStickyNote = useCallback(() => {
     sendWs({
@@ -32,9 +34,13 @@ export function Canvas() {
     });
   }, []);
 
-  const handleUploadImage = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !room || !sessionToken) return;
+  const uploadAsset = useCallback(async (
+    file: File,
+    objectType: WhiteboardObjectType,
+    width: number,
+    height: number,
+  ) => {
+    if (!room || !sessionToken) return;
 
     const formData = new FormData();
     formData.append("file", file);
@@ -57,11 +63,11 @@ export function Canvas() {
       sendWs({
         type: "object_create",
         payload: {
-          type: "image",
+          type: objectType,
           x: 200 + Math.random() * 400,
           y: 200 + Math.random() * 400,
-          width: 400,
-          height: 300,
+          width,
+          height,
           content: asset.url,
           assetId: asset.id,
         },
@@ -69,10 +75,19 @@ export function Canvas() {
     } catch (err) {
       console.error("Upload failed:", err);
     }
-
-    // Reset file input so the same file can be re-uploaded
-    e.target.value = "";
   }, [room, sessionToken]);
+
+  const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await uploadAsset(file, "image", 400, 300);
+    e.target.value = "";
+  }, [uploadAsset]);
+
+  const handlePdfUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) await uploadAsset(file, "pdf", 400, 500);
+    e.target.value = "";
+  }, [uploadAsset]);
 
   const handleCanvasClick = useCallback((e: React.MouseEvent) => {
     if (e.target === canvasRef.current) {
@@ -88,14 +103,24 @@ export function Canvas() {
         <button className={styles.toolbarButton} onClick={handleAddStickyNote}>
           + Sticky Note
         </button>
-        <button className={styles.toolbarButton} onClick={() => fileInputRef.current?.click()}>
+        <button className={styles.toolbarButton} onClick={() => imageInputRef.current?.click()}>
           + Image
         </button>
+        <button className={styles.toolbarButton} onClick={() => pdfInputRef.current?.click()}>
+          + PDF
+        </button>
         <input
-          ref={fileInputRef}
+          ref={imageInputRef}
           type="file"
           accept={ALLOWED_IMAGE_TYPES.join(",")}
-          onChange={handleUploadImage}
+          onChange={handleImageUpload}
+          hidden
+        />
+        <input
+          ref={pdfInputRef}
+          type="file"
+          accept={ALLOWED_PDF_TYPES.join(",")}
+          onChange={handlePdfUpload}
           hidden
         />
       </div>
@@ -106,6 +131,7 @@ export function Canvas() {
         maxScale={3}
         limitToBounds={false}
         panning={{ velocityDisabled: true }}
+        doubleClick={{ disabled: true }}
         onTransformed={(_, state) => setScale(state.scale)}
       >
         <TransformComponent

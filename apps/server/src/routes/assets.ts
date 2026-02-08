@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { FastifyInstance } from "fastify";
 import { nanoid } from "nanoid";
-import { ALLOWED_IMAGE_TYPES, MAX_FILE_SIZE } from "@vtt/shared";
+import { ALLOWED_IMAGE_TYPES, ALLOWED_PDF_TYPES, MAX_FILE_SIZE } from "@vtt/shared";
 import type { RoomService } from "../services/roomService.js";
 import type { AssetService } from "../services/assetService.js";
 
@@ -39,7 +39,8 @@ export function assetRoutes(app: FastifyInstance, deps: AssetDeps) {
       }
 
       const mimeType = file.mimetype;
-      if (!ALLOWED_IMAGE_TYPES.includes(mimeType as (typeof ALLOWED_IMAGE_TYPES)[number])) {
+      const allowedTypes: readonly string[] = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_PDF_TYPES];
+      if (!allowedTypes.includes(mimeType)) {
         return reply.status(400).send({ error: `File type not allowed: ${mimeType}` });
       }
 

@@ -19,7 +19,7 @@ import { wsRoutes } from "./routes/ws.js";
 const PORT = parseInt(process.env["PORT"] ?? "3001", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
 const DB_PATH = process.env["DB_PATH"] ?? "data/vtt.db";
-const UPLOADS_DIR = resolve(process.env["UPLOADS_DIR"] ?? "uploads");
+const UPLOADS_DIR = resolve(process.env["UPLOADS_DIR"] ?? "data/uploads");
 
 // Ensure data directory exists
 const dataDir = DB_PATH.substring(0, DB_PATH.lastIndexOf("/"));

@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@vtt/shared": "workspace:*",
+    "pdfjs-dist": "^5.4.296",
     "react": "^19",
     "react-dom": "^19",
+    "react-pdf": "^10.3.0",
     "react-rnd": "^10.5.2",
     "react-router": "^7",
     "react-zoom-pan-pinch": "^3.7.0",

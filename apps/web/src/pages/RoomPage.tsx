@@ -8,6 +8,7 @@ import { useUiStore } from "../stores/uiStore.js";
 import { connectWs, disconnectWs } from "../lib/ws.js";
 import { Canvas } from "../components/canvas/Canvas.js";
 import { Sidebar } from "../components/sidebar/Sidebar.js";
+import { PdfViewer } from "../components/sidebar/PdfViewer.js";
 import styles from "./RoomPage.module.css";
 
 export function RoomPage() {
@@ -18,6 +19,7 @@ export function RoomPage() {
   const { setObjects, addObject, updateObject, removeObject } = useCanvasStore();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
+  const pdfAssetId = useUiStore((s) => s.pdfAssetId);
   const [loading, setLoading] = useState(!room);
   const [wsConnected, setWsConnected] = useState(false);
 
@@ -137,6 +139,7 @@ export function RoomPage() {
         </header>
         <div className={styles.canvasArea}>
           <Canvas />
+          {pdfAssetId && <PdfViewer />}
         </div>
       </div>
       <Sidebar />

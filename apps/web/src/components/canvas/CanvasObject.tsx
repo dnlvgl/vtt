@@ -4,6 +4,7 @@ import { useCanvasStore } from "../../stores/canvasStore.js";
 import { sendWs } from "../../lib/ws.js";
 import { StickyNote } from "./StickyNote.js";
 import { ImageObject } from "./ImageObject.js";
+import { PdfThumbnail } from "./PdfThumbnail.js";
 import styles from "./CanvasObject.module.css";
 
 interface CanvasObjectProps {
@@ -70,6 +71,7 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     <div
       onPointerDown={stopPropagation}
       onMouseDown={stopPropagation}
+      onDoubleClick={stopPropagation}
     >
       <Rnd
         ref={rndRef}
@@ -97,6 +99,12 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
         )}
         {object.type === "image" && (
           <ImageObject
+            assetId={object.assetId}
+            content={object.content}
+          />
+        )}
+        {object.type === "pdf" && (
+          <PdfThumbnail
             assetId={object.assetId}
             content={object.content}
           />

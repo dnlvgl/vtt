@@ -152,8 +152,8 @@ Installed `react-zoom-pan-pinch` + `react-rnd`. Canvas component with pan/zoom v
 Installed `@fastify/multipart` + `@fastify/static`. Created `assetService` for DB operations. Upload endpoint at `POST /api/rooms/:code/assets` with session token auth, file type validation (png/jpeg/gif/webp), and size limit (50MB). Files stored in `uploads/<roomId>/<assetId>.<ext>`, served via `@fastify/static` at `/uploads/`. `ImageObject` component renders images with `object-fit: contain`. Canvas toolbar has "+ Image" button triggering hidden file input. Upload flow: file → REST upload → get asset URL → WS `object_create` with `type: "image"` + `assetId` + `content` (URL). Vite dev proxy forwards `/uploads` to backend.
 **Verify:** Upload image, appears on canvas, drag/resize, visible to other players.
 
-### Phase 6: PDF Upload + Viewer
-Configure `react-pdf` with pdf.js worker. Build `PdfThumbnail` (canvas) and `PdfViewer` (sidebar). Click thumbnail to open full viewer.
+### Phase 6: PDF Upload + Viewer (DONE)
+Installed `react-pdf` v10 + `pdfjs-dist` (pinned to v5.4.296 matching react-pdf). Worker configured via `?url` Vite import. Asset upload route updated to accept both images and PDFs. `PdfThumbnail` component renders first page on canvas with page count badge; double-click opens sidebar viewer. `PdfViewer` in sidebar with prev/next page navigation. Sidebar now has tab switching (Chat / PDF) — PDF tab appears when a PDF is open. Canvas toolbar has "+ PDF" button. `CanvasObject` renders `PdfThumbnail` for `type === "pdf"`. Upload flow reuses shared `uploadAsset()` function for both images and PDFs.
 **Verify:** Upload PDF, thumbnail on canvas, click to read in sidebar with page navigation.
 
 ### Phase 7: GM Visibility Control
@@ -162,3 +162,4 @@ Add hidden toggle on object creation (GM only), server-side filtering, reveal/hi
 
 ### Phase 8: Polish
 WebSocket reconnection with exponential backoff, optimistic updates, z-index management (bring to front/send to back), loading states, error toasts, room cleanup timer.
+Delete images from filesystem once deleted from the canvas

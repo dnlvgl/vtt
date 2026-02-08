@@ -1,0 +1,36 @@
+.pdfThumbnail {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: white;
+  cursor: grab;
+  user-select: none;
+  position: relative;
+}
+
+.pdfThumbnail:active {
+  cursor: grabbing;
+}
+
+.pageCount {
+  position: absolute;
+  bottom: 0.5rem;
+  right: 0.5rem;
+  padding: 0.2rem 0.5rem;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  font-size: 0.75rem;
+  border-radius: var(--radius-sm);
+}
+
+.loading,
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
