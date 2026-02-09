@@ -76,6 +76,26 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     }
   }, [id, object]);
 
+  const handleBringToFront = useCallback(() => {
+    const objects = useCanvasStore.getState().objects;
+    const maxZ = Math.max(...Object.values(objects).map((o) => o.zIndex ?? 0));
+    const newZ = maxZ + 1;
+    const obj = objects[id];
+    if (!obj) return;
+    updateObject({ ...obj, zIndex: newZ });
+    sendWs({ type: "object_update", payload: { id, zIndex: newZ } });
+  }, [id, updateObject]);
+
+  const handleSendToBack = useCallback(() => {
+    const objects = useCanvasStore.getState().objects;
+    const minZ = Math.min(...Object.values(objects).map((o) => o.zIndex ?? 0));
+    const newZ = minZ - 1;
+    const obj = objects[id];
+    if (!obj) return;
+    updateObject({ ...obj, zIndex: newZ });
+    sendWs({ type: "object_update", payload: { id, zIndex: newZ } });
+  }, [id, updateObject]);
+
   if (!object) return null;
 
   const isHidden = object.hiddenFromPlayers;
@@ -109,15 +129,31 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
         {isGm && isHidden && (
           <div className={styles.hiddenBadge}>Hidden</div>
         )}
-        {isGm && isSelected && (
+        {isSelected && (
           <div className={styles.actions}>
             <button
               className={styles.actionButton}
               onMouseDown={stopPropagation}
-              onClick={handleToggleVisibility}
+              onClick={handleBringToFront}
             >
-              {isHidden ? "Reveal" : "Hide"}
+              Front
             </button>
+            <button
+              className={styles.actionButton}
+              onMouseDown={stopPropagation}
+              onClick={handleSendToBack}
+            >
+              Back
+            </button>
+            {isGm && (
+              <button
+                className={styles.actionButton}
+                onMouseDown={stopPropagation}
+                onClick={handleToggleVisibility}
+              >
+                {isHidden ? "Reveal" : "Hide"}
+              </button>
+            )}
           </div>
         )}
         {object.type === "sticky_note" && (

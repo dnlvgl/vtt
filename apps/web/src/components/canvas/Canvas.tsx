@@ -5,6 +5,7 @@ import type { WhiteboardObjectType } from "@vtt/shared";
 import { useCanvasStore } from "../../stores/canvasStore.js";
 import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
+import { useToastStore } from "../../stores/toastStore.js";
 import { CanvasObject } from "./CanvasObject.js";
 import styles from "./Canvas.module.css";
 
@@ -17,6 +18,7 @@ export function Canvas() {
   const isGm = useRoomStore((s) => s.isGm);
   const [scale, setScale] = useState(1);
   const [createHidden, setCreateHidden] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const canvasRef = useRef<HTMLDivElement>(null);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -48,6 +50,7 @@ export function Canvas() {
     const formData = new FormData();
     formData.append("file", file);
 
+    setUploading(true);
     try {
       const res = await fetch(`/api/rooms/${room.code}/assets`, {
         method: "POST",
@@ -57,7 +60,7 @@ export function Canvas() {
 
       if (!res.ok) {
         const err = await res.json();
-        console.error("Upload failed:", err.error);
+        useToastStore.getState().addToast("error", err.error ?? "Upload failed");
         return;
       }
 
@@ -76,8 +79,10 @@ export function Canvas() {
           ...(createHidden ? { hiddenFromPlayers: true } : {}),
         },
       });
-    } catch (err) {
-      console.error("Upload failed:", err);
+    } catch {
+      useToastStore.getState().addToast("error", "Upload failed. Please try again.");
+    } finally {
+      setUploading(false);
     }
   }, [room, sessionToken, createHidden]);
 
@@ -107,12 +112,13 @@ export function Canvas() {
         <button className={styles.toolbarButton} onClick={handleAddStickyNote}>
           + Sticky Note
         </button>
-        <button className={styles.toolbarButton} onClick={() => imageInputRef.current?.click()}>
+        <button className={styles.toolbarButton} onClick={() => imageInputRef.current?.click()} disabled={uploading}>
           + Image
         </button>
-        <button className={styles.toolbarButton} onClick={() => pdfInputRef.current?.click()}>
+        <button className={styles.toolbarButton} onClick={() => pdfInputRef.current?.click()} disabled={uploading}>
           + PDF
         </button>
+        {uploading && <span className={styles.uploadingIndicator}>Uploading...</span>}
         <input
           ref={imageInputRef}
           type="file"

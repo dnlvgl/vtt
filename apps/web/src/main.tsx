@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router";
 import { HomePage } from "./pages/HomePage.js";
 import { GmDashboardPage } from "./pages/GmDashboardPage.js";
 import { RoomPage } from "./pages/RoomPage.js";
+import { ToastContainer } from "./components/ui/Toast.js";
 import "./styles/global.css";
 
 createRoot(document.getElementById("root")!).render(
@@ -15,5 +16,6 @@ createRoot(document.getElementById("root")!).render(
         <Route path="/room/:code" element={<RoomPage />} />
       </Routes>
     </BrowserRouter>
+    <ToastContainer />
   </StrictMode>,
 );

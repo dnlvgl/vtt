@@ -143,6 +143,14 @@ export function createRoomService(db: Db) {
       return rows;
     },
 
+    getAllRoomIds(): string[] {
+      return db
+        .select({ id: schema.rooms.id })
+        .from(schema.rooms)
+        .all()
+        .map((r) => r.id);
+    },
+
     deleteRoom(id: string): string[] | null {
       const room = db
         .select()

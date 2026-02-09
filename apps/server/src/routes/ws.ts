@@ -1,4 +1,5 @@
 import { randomInt } from "node:crypto";
+import { unlinkSync } from "node:fs";
 import type { FastifyInstance } from "fastify";
 import type { ClientMessage, ChatMessage } from "@vtt/shared";
 import { rollDice } from "@vtt/shared";
@@ -9,17 +10,19 @@ function cryptoRandom(max: number): number {
 import type { RoomService } from "../services/roomService.js";
 import type { CanvasService } from "../services/canvasService.js";
 import type { ChatService } from "../services/chatService.js";
+import type { AssetService } from "../services/assetService.js";
 import type { WsManager } from "../services/wsManager.js";
 
 interface WsDeps {
   roomService: RoomService;
   canvasService: CanvasService;
   chatService: ChatService;
+  assetService: AssetService;
   wsManager: WsManager;
 }
 
 export function wsRoutes(app: FastifyInstance, deps: WsDeps) {
-  const { roomService, canvasService, chatService, wsManager } = deps;
+  const { roomService, canvasService, chatService, assetService, wsManager } = deps;
 
   app.get<{ Params: { code: string }; Querystring: { token?: string } }>(
     "/ws/:code",
@@ -206,6 +209,13 @@ export function wsRoutes(app: FastifyInstance, deps: WsDeps) {
       case "object_delete": {
         const toDelete = canvasService.getObject(msg.payload.id, roomId);
         canvasService.deleteObject(msg.payload.id, roomId);
+
+        if (toDelete?.assetId) {
+          const storagePath = assetService.deleteAsset(toDelete.assetId);
+          if (storagePath) {
+            try { unlinkSync(storagePath); } catch { /* file may already be gone */ }
+          }
+        }
 
         if (toDelete?.hiddenFromPlayers) {
           for (const ws of wsManager.getRoomConnections(roomId)) {

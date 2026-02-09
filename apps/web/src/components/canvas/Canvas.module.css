@@ -38,8 +38,13 @@
   transition: background 0.15s;
 }
 
-.toolbarButton:hover {
+.toolbarButton:hover:not(:disabled) {
   background: var(--color-surface-hover);
+}
+
+.toolbarButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .toolbarToggle {
@@ -73,6 +78,19 @@
   width: 1px;
   background: var(--color-border);
   align-self: stretch;
+}
+
+.uploadingIndicator {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--color-warning);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 .zoomInfo {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router";
 import type { RoomSummary, CreateRoomResponse, JoinRoomResponse } from "@vtt/shared";
 import { useRoomStore } from "../stores/roomStore.js";
+import { useToastStore } from "../stores/toastStore.js";
 import styles from "./GmDashboardPage.module.css";
 
 export function GmDashboardPage() {
@@ -11,7 +12,7 @@ export function GmDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [newRoomName, setNewRoomName] = useState("");
   const [creating, setCreating] = useState(false);
-  const [error, setError] = useState("");
+  const addToast = useToastStore((s) => s.addToast);
 
   useEffect(() => {
     fetchRooms();
@@ -24,7 +25,7 @@ export function GmDashboardPage() {
       const data: { rooms: RoomSummary[] } = await res.json();
       setRooms(data.rooms);
     } catch {
-      setError("Failed to load rooms.");
+      addToast("error", "Failed to load rooms.");
     } finally {
       setLoading(false);
     }
@@ -34,7 +35,6 @@ export function GmDashboardPage() {
     e.preventDefault();
     if (!newRoomName.trim()) return;
     setCreating(true);
-    setError("");
 
     try {
       const res = await fetch("/api/rooms", {
@@ -56,14 +56,13 @@ export function GmDashboardPage() {
       ]);
       setNewRoomName("");
     } catch {
-      setError("Failed to create room.");
+      addToast("error", "Failed to create room.");
     } finally {
       setCreating(false);
     }
   }
 
   async function handleEnter(room: RoomSummary) {
-    setError("");
     try {
       const res = await fetch(`/api/rooms/${room.code}/join`, {
         method: "POST",
@@ -77,20 +76,19 @@ export function GmDashboardPage() {
       localStorage.setItem(`session-${data.room.code}`, data.sessionToken);
       navigate(`/room/${data.room.code}`);
     } catch {
-      setError("Failed to enter room.");
+      addToast("error", "Failed to enter room.");
     }
   }
 
   async function handleDelete(room: RoomSummary) {
     if (!window.confirm(`Delete room "${room.name}"? This cannot be undone.`)) return;
-    setError("");
 
     try {
       const res = await fetch(`/api/rooms/${room.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete room");
       setRooms((prev) => prev.filter((r) => r.id !== room.id));
     } catch {
-      setError("Failed to delete room.");
+      addToast("error", "Failed to delete room.");
     }
   }
 
@@ -114,8 +112,6 @@ export function GmDashboardPage() {
           {creating ? "Creating..." : "Create Room"}
         </button>
       </form>
-
-      {error && <p className={styles.error}>{error}</p>}
 
       {loading ? (
         <p className={styles.emptyState}>Loading...</p>

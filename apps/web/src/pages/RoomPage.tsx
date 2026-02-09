@@ -6,6 +6,7 @@ import { useChatStore } from "../stores/chatStore.js";
 import { useCanvasStore } from "../stores/canvasStore.js";
 import { useUiStore } from "../stores/uiStore.js";
 import { connectWs, disconnectWs } from "../lib/ws.js";
+import { useToastStore } from "../stores/toastStore.js";
 import { Canvas } from "../components/canvas/Canvas.js";
 import { Sidebar } from "../components/sidebar/Sidebar.js";
 import { PdfViewer } from "../components/sidebar/PdfViewer.js";
@@ -22,6 +23,7 @@ export function RoomPage() {
   const pdfAssetId = useUiStore((s) => s.pdfAssetId);
   const [loading, setLoading] = useState(!room);
   const [wsConnected, setWsConnected] = useState(false);
+  const [wasEverConnected, setWasEverConnected] = useState(false);
 
   // Rejoin room if we don't have state (page refresh)
   useEffect(() => {
@@ -63,7 +65,6 @@ export function RoomPage() {
           setParticipants(msg.payload.participants);
           setMessages(msg.payload.messages);
           setObjects(msg.payload.objects);
-          setWsConnected(true);
           break;
         case "participant_joined":
           addParticipant(msg.payload);
@@ -98,13 +99,14 @@ export function RoomPage() {
           break;
         }
         case "error":
-          console.error("WS error:", msg.payload.code, msg.payload.message);
+          useToastStore.getState().addToast("error", msg.payload.message);
           break;
       }
     }
 
-    connectWs(code, sessionToken, handleMessage, () => {
-      setWsConnected(false);
+    connectWs(code, sessionToken, handleMessage, (connected) => {
+      setWsConnected(connected);
+      if (connected) setWasEverConnected(true);
     });
 
     return () => {
@@ -129,7 +131,11 @@ export function RoomPage() {
           <div className={styles.roomInfo}>
             <span className={styles.roomName}>{room.name}</span>
             <span className={styles.roomCode}>{room.code}</span>
-            {!wsConnected && <span className={styles.connecting}>Connecting...</span>}
+            {!wsConnected && (
+              <span className={styles.connecting}>
+                {wasEverConnected ? "Reconnecting..." : "Connecting..."}
+              </span>
+            )}
           </div>
           <div className={styles.headerActions}>
             <button

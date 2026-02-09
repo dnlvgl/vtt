@@ -15,6 +15,7 @@ import { createWsManager } from "./services/wsManager.js";
 import { roomRoutes } from "./routes/rooms.js";
 import { assetRoutes } from "./routes/assets.js";
 import { wsRoutes } from "./routes/ws.js";
+import { startCleanupTimer } from "./services/cleanupService.js";
 
 const PORT = parseInt(process.env["PORT"] ?? "3001", 10);
 const HOST = process.env["HOST"] ?? "0.0.0.0";
@@ -63,7 +64,9 @@ async function start() {
     // Register routes
     roomRoutes(app, roomService);
     assetRoutes(app, { roomService, assetService, uploadsDir: UPLOADS_DIR });
-    wsRoutes(app, { roomService, canvasService, chatService, wsManager });
+    wsRoutes(app, { roomService, canvasService, chatService, assetService, wsManager });
+
+    startCleanupTimer(roomService, wsManager);
 
     await app.listen({ port: PORT, host: HOST });
     console.log(`Server listening on http://${HOST}:${PORT}`);

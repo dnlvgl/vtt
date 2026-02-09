@@ -160,6 +160,5 @@ Installed `react-pdf` v10 + `pdfjs-dist` (pinned to v5.4.296 matching react-pdf)
 Server-side infrastructure was already built (hiddenFromPlayers field, server filtering, reveal/hide WS handlers). Frontend: GM toolbar has "Visible/Hidden" toggle that applies to all newly created objects (sticky notes, images, PDFs). Hidden objects show with 50% opacity, dashed border, and "Hidden" badge. When GM selects any object, a "Reveal"/"Hide" action button appears above it. `object_reveal` sends full object to all (players see it appear); `object_hidden` for GM updates the flag locally instead of removing the object. Server already filters hidden objects from non-GM `room_state`.
 **Verify:** GM creates hidden asset, player doesn't see it, GM reveals, player sees it appear.
 
-### Phase 8: Polish
-WebSocket reconnection with exponential backoff, optimistic updates, z-index management (bring to front/send to back), loading states, error toasts, room cleanup timer.
-Delete images from filesystem once deleted from the canvas
+### Phase 8: Polish (DONE)
+WebSocket reconnection with exponential backoff, z-index management (bring to front/send to back), upload loading states, toast notification system, asset file cleanup on object delete, room cleanup timer for idle rooms.

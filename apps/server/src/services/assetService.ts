@@ -37,6 +37,17 @@ export function createAssetService(db: Db) {
         .where(eq(schema.assets.id, id))
         .get();
     },
+
+    deleteAsset(id: string) {
+      const asset = db
+        .select()
+        .from(schema.assets)
+        .where(eq(schema.assets.id, id))
+        .get();
+      if (!asset) return null;
+      db.delete(schema.assets).where(eq(schema.assets.id, id)).run();
+      return asset.storagePath;
+    },
   };
 }
 
