@@ -1,0 +1,11 @@
+- drag drop for files
+- copy assets on canvas
+- colors for sticky notes
+- visible name for assets? e.g. name on character sheet
+- insert emojis
+- font sizes for postits, general formating?
+- text search > jump to position (ignore pdf)
+  - alternatively: add tags to assets?
+- theme support
+- limit chat history (configurable, start with like 100?)
+- use radix for components

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import * as Toolbar from "@radix-ui/react-toolbar";
 import { ALLOWED_IMAGE_TYPES, ALLOWED_PDF_TYPES } from "@vtt/shared";
 import type { WhiteboardObjectType } from "@vtt/shared";
 import { useCanvasStore } from "../../stores/canvasStore.js";
@@ -7,6 +8,7 @@ import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
 import { useToastStore } from "../../stores/toastStore.js";
 import { CanvasObject } from "./CanvasObject.js";
+import { Tooltip } from "../ui/Tooltip.js";
 import styles from "./Canvas.module.css";
 
 export function Canvas() {
@@ -108,16 +110,16 @@ export function Canvas() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.toolbar}>
-        <button className={styles.toolbarButton} onClick={handleAddStickyNote}>
+      <Toolbar.Root className={styles.toolbar}>
+        <Toolbar.Button className={styles.toolbarButton} onClick={handleAddStickyNote}>
           + Sticky Note
-        </button>
-        <button className={styles.toolbarButton} onClick={() => imageInputRef.current?.click()} disabled={uploading}>
+        </Toolbar.Button>
+        <Toolbar.Button className={styles.toolbarButton} onClick={() => imageInputRef.current?.click()} disabled={uploading}>
           + Image
-        </button>
-        <button className={styles.toolbarButton} onClick={() => pdfInputRef.current?.click()} disabled={uploading}>
+        </Toolbar.Button>
+        <Toolbar.Button className={styles.toolbarButton} onClick={() => pdfInputRef.current?.click()} disabled={uploading}>
           + PDF
-        </button>
+        </Toolbar.Button>
         {uploading && <span className={styles.uploadingIndicator}>Uploading...</span>}
         <input
           ref={imageInputRef}
@@ -135,17 +137,18 @@ export function Canvas() {
         />
         {isGm && (
           <>
-            <div className={styles.toolbarSeparator} />
-            <button
-              className={`${styles.toolbarToggle} ${createHidden ? styles.toolbarToggleActive : ""}`}
-              onClick={() => setCreateHidden((v) => !v)}
-              title="New objects will be created hidden from players"
-            >
-              Create as: {createHidden ? "Hidden" : "Visible"}
-            </button>
+            <Toolbar.Separator className={styles.toolbarSeparator} />
+            <Tooltip content="New objects will be created hidden from players">
+              <Toolbar.Button
+                className={`${styles.toolbarToggle} ${createHidden ? styles.toolbarToggleActive : ""}`}
+                onClick={() => setCreateHidden((v) => !v)}
+              >
+                Create as: {createHidden ? "Hidden" : "Visible"}
+              </Toolbar.Button>
+            </Tooltip>
           </>
         )}
-      </div>
+      </Toolbar.Root>
 
       <TransformWrapper
         initialScale={1}

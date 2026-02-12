@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Rnd } from "react-rnd";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useCanvasStore } from "../../stores/canvasStore.js";
 import { useRoomStore } from "../../stores/roomStore.js";
 import { sendWs } from "../../lib/ws.js";
@@ -96,6 +97,11 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
     sendWs({ type: "object_update", payload: { id, zIndex: newZ } });
   }, [id, updateObject]);
 
+  const handleDelete = useCallback(() => {
+    useCanvasStore.getState().removeObject(id);
+    sendWs({ type: "object_delete", payload: { id } });
+  }, [id]);
+
   if (!object) return null;
 
   const isHidden = object.hiddenFromPlayers;
@@ -131,29 +137,52 @@ export function CanvasObject({ id, scale, isSelected, onSelect }: CanvasObjectPr
         )}
         {isSelected && (
           <div className={styles.actions}>
-            <button
-              className={styles.actionButton}
-              onMouseDown={stopPropagation}
-              onClick={handleBringToFront}
-            >
-              Front
-            </button>
-            <button
-              className={styles.actionButton}
-              onMouseDown={stopPropagation}
-              onClick={handleSendToBack}
-            >
-              Back
-            </button>
-            {isGm && (
-              <button
-                className={styles.actionButton}
-                onMouseDown={stopPropagation}
-                onClick={handleToggleVisibility}
-              >
-                {isHidden ? "Reveal" : "Hide"}
-              </button>
-            )}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button
+                  className={styles.actionButton}
+                  onMouseDown={stopPropagation}
+                >
+                  Actions
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content
+                  className={styles.dropdownContent}
+                  side="top"
+                  sideOffset={4}
+                  onCloseAutoFocus={(e) => e.preventDefault()}
+                >
+                  <DropdownMenu.Item
+                    className={styles.dropdownItem}
+                    onSelect={handleBringToFront}
+                  >
+                    Bring to Front
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item
+                    className={styles.dropdownItem}
+                    onSelect={handleSendToBack}
+                  >
+                    Send to Back
+                  </DropdownMenu.Item>
+                  {isGm && (
+                    <DropdownMenu.Item
+                      className={styles.dropdownItem}
+                      onSelect={handleToggleVisibility}
+                    >
+                      {isHidden ? "Reveal to Players" : "Hide from Players"}
+                    </DropdownMenu.Item>
+                  )}
+                  <DropdownMenu.Separator className={styles.dropdownSeparator} />
+                  <DropdownMenu.Item
+                    className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                    onSelect={handleDelete}
+                  >
+                    Delete
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
           </div>
         )}
         {object.type === "sticky_note" && (

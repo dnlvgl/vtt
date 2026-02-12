@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Document, Page } from "react-pdf";
+import * as Dialog from "@radix-ui/react-dialog";
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import "../../lib/pdfjs.js";
@@ -29,15 +30,6 @@ export function PdfViewer() {
     return () => observer.disconnect();
   }, []);
 
-  // Close on Escape
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") closePdfViewer();
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [closePdfViewer]);
-
   const pdfObject = Object.values(objects).find(
     (o) => o.type === "pdf" && o.assetId === pdfAssetId,
   );
@@ -46,58 +38,72 @@ export function PdfViewer() {
   const handlePrev = useCallback(() => setPageNumber((p) => Math.max(1, p - 1)), []);
   const handleNext = useCallback(() => setPageNumber((p) => Math.min(numPages ?? p, p + 1)), [numPages]);
 
-  if (!content) return null;
-
-  const fileUrl = new URL(content, window.location.origin).toString();
+  const filename = content?.split("/").pop() ?? "PDF";
+  const fileUrl = content ? new URL(content, window.location.origin).toString() : null;
 
   return (
-    <div className={styles.overlay}>
-      <div className={styles.panel}>
-        <div className={styles.toolbar}>
-          <span className={styles.filename}>{pdfObject?.content?.split("/").pop() ?? "PDF"}</span>
-          <div className={styles.nav}>
-            <button
-              className={styles.navButton}
-              disabled={pageNumber <= 1}
-              onClick={handlePrev}
-            >
-              Prev
-            </button>
-            <span className={styles.pageInfo}>
-              {pageNumber} / {numPages ?? "..."}
-            </span>
-            <button
-              className={styles.navButton}
-              disabled={numPages === null || pageNumber >= numPages}
-              onClick={handleNext}
-            >
-              Next
-            </button>
+    <Dialog.Root
+      open={pdfAssetId !== null}
+      onOpenChange={(open) => {
+        if (!open) closePdfViewer();
+      }}
+    >
+      <Dialog.Portal>
+        <Dialog.Overlay className={styles.overlay} />
+        <Dialog.Content
+          className={styles.panel}
+          aria-describedby={undefined}
+        >
+          <Dialog.Title className={styles.filename}>
+            {filename}
+          </Dialog.Title>
+          <div className={styles.toolbar}>
+            <div className={styles.nav}>
+              <button
+                className={styles.navButton}
+                disabled={pageNumber <= 1}
+                onClick={handlePrev}
+              >
+                Prev
+              </button>
+              <span className={styles.pageInfo}>
+                {pageNumber} / {numPages ?? "..."}
+              </span>
+              <button
+                className={styles.navButton}
+                disabled={numPages === null || pageNumber >= numPages}
+                onClick={handleNext}
+              >
+                Next
+              </button>
+            </div>
+            <Dialog.Close className={styles.closeButton}>
+              &times;
+            </Dialog.Close>
           </div>
-          <button className={styles.closeButton} onClick={closePdfViewer}>
-            &times;
-          </button>
-        </div>
-        <div ref={containerRef} className={styles.pageContainer}>
-          <Document
-            file={fileUrl}
-            onLoadSuccess={({ numPages: n }) => {
-              setNumPages(n);
-              setPageNumber(1);
-            }}
-            onLoadError={(err) => console.error("PDF load error:", err)}
-            loading={<div className={styles.loading}>Loading PDF...</div>}
-            error={<div className={styles.loading}>Failed to load PDF</div>}
-          >
-            <Page
-              pageNumber={pageNumber}
-              width={pageWidth}
-              renderAnnotationLayer={true}
-              renderTextLayer={true}
-            />
-          </Document>
-        </div>
-      </div>
-    </div>
+          <div ref={containerRef} className={styles.pageContainer}>
+            {fileUrl && (
+              <Document
+                file={fileUrl}
+                onLoadSuccess={({ numPages: n }) => {
+                  setNumPages(n);
+                  setPageNumber(1);
+                }}
+                onLoadError={(err) => console.error("PDF load error:", err)}
+                loading={<div className={styles.loading}>Loading PDF...</div>}
+                error={<div className={styles.loading}>Failed to load PDF</div>}
+              >
+                <Page
+                  pageNumber={pageNumber}
+                  width={pageWidth}
+                  renderAnnotationLayer={true}
+                  renderTextLayer={true}
+                />
+              </Document>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

@@ -20,7 +20,6 @@ export function RoomPage() {
   const { setObjects, addObject, updateObject, removeObject } = useCanvasStore();
   const sidebarOpen = useUiStore((s) => s.sidebarOpen);
   const toggleSidebar = useUiStore((s) => s.toggleSidebar);
-  const pdfAssetId = useUiStore((s) => s.pdfAssetId);
   const [loading, setLoading] = useState(!room);
   const [wsConnected, setWsConnected] = useState(false);
   const [wasEverConnected, setWasEverConnected] = useState(false);
@@ -153,7 +152,7 @@ export function RoomPage() {
         </header>
         <div className={styles.canvasArea}>
           <Canvas />
-          {pdfAssetId && <PdfViewer />}
+          <PdfViewer />
         </div>
       </div>
       <Sidebar />

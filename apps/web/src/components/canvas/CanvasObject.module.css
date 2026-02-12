@@ -55,3 +55,53 @@
 .actionButton:hover {
   background: var(--color-surface-hover);
 }
+
+.dropdownContent {
+  min-width: 160px;
+  padding: 0.3rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-lg);
+  z-index: 10000;
+  animation: fadeIn 0.12s ease-out;
+}
+
+.dropdownItem {
+  padding: 0.4rem 0.6rem;
+  border-radius: calc(var(--radius-sm) - 2px);
+  font-size: 0.8rem;
+  color: var(--color-text);
+  cursor: pointer;
+  outline: none;
+}
+
+.dropdownItem[data-highlighted] {
+  background: var(--color-surface-hover);
+}
+
+.dropdownItemDanger {
+  color: var(--color-error);
+}
+
+.dropdownItemDanger[data-highlighted] {
+  background: var(--color-error);
+  color: white;
+}
+
+.dropdownSeparator {
+  height: 1px;
+  margin: 0.3rem 0.2rem;
+  background: var(--color-border);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

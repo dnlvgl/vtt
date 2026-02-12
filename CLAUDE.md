@@ -31,7 +31,7 @@ VTT (Virtual Tabletop) — a real-time collaborative web app for pen-and-paper R
 - **IDs** generated with `nanoid` (server-side only — not installed in web app).
 - **Validation** with `zod` schemas defined in `@vtt/shared`.
 - **WebSocket protocol:** `{ type, payload }` envelope. Types defined in `packages/shared/src/types/ws.ts`.
-- **No Radix UI** despite being in PLAN.md — all UI is custom components with CSS Modules.
+- **Radix UI primitives** for accessible UI: Toast, Dialog, Tooltip, DropdownMenu, Toolbar. Styled with CSS Modules.
 - **No immer middleware** — Zustand stores use plain state updates.
 
 ## Architecture
